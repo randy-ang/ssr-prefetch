@@ -1,0 +1,23 @@
+{
+  "name": "ssr-prefetch",
+  "version": "0.1.0",
+  "description": "js library to prefetch server side before ssr",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/randy-ang/ssr-prefetch.git"
+  },
+  "author": "randy-ang <randyanggadinata@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/randy-ang/ssr-prefetch/issues"
+  },
+  "homepage": "https://github.com/randy-ang/ssr-prefetch#readme",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "prefetch",
+    "ssr"
+  ]
+}
