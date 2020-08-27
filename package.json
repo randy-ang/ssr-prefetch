@@ -19,5 +19,8 @@
   "keywords": [
     "prefetch",
     "ssr"
-  ]
+  ],
+  "peerDependencies": {
+    "react": "^16.13.1"
+  }
 }
