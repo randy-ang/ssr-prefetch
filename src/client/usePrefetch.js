@@ -13,11 +13,11 @@ function usePrefetch(
     lazy = false,
   } = {}
 ) {
-  let { data: contextData, requests } = useContext(DataContext);
+  let { data: prefetchedData = {}, requests } = useContext(DataContext);
 
   const initialState = useMemo(() => {
     return Object.keys(prefetchFunctions).reduce((total, currentKey) => {
-      const { [currentKey]: currentData = {} } = contextData;
+      const { [currentKey]: currentData = {} } = prefetchedData;
       return {
         ...total,
         [currentKey]: {
@@ -79,11 +79,11 @@ function usePrefetch(
   if (requests) {
     requests.push(
       ...Object.keys(prefetchFunctions)
-        .filter((key) => !lazy && !contextData[key])
+        .filter((key) => !lazy && !prefetchedData[key])
         .map((key) =>
           prefetchFunctions[key](...(params[key] || []))
-            .then((data) => (contextData[key] = { data }))
-            .catch(() => (contextData[key] = {}))
+            .then((data) => (prefetchedData[key] = { data }))
+            .catch(() => (prefetchedData[key] = {}))
         )
     );
   }
