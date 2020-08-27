@@ -1,5 +1,5 @@
 import { useState, useContext, useMemo, useEffect } from "react";
-import { DataContext } from "../shared/context";
+import { DataContext } from "../context";
 
 const defaultParams = {};
 const defaultInitialValue = {};

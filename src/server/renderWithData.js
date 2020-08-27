@@ -1,5 +1,5 @@
 import React from "react";
-import { DataContext } from "../shared/context";
+import { DataContext } from "../context";
 
 export default async function renderWithData(
   Component,
