@@ -41,5 +41,6 @@
   "files": [
     "dist/"
   ],
-  "main": "dist/index.js"
+  "main": "dist/index.js",
+  "modules.root": "dist"
 }
