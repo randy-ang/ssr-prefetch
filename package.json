@@ -39,7 +39,9 @@
     "webpack-node-externals": "^2.5.2"
   },
   "files": [
-    "dist/"
+    "dist/",
+    "client.js",
+    "server.js"
   ],
   "main": "dist/index.js"
 }
