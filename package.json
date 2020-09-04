@@ -40,8 +40,8 @@
   },
   "files": [
     "dist/",
-    "client.js",
-    "server.js"
+    "client",
+    "server"
   ],
   "main": "dist/index.js"
 }
