@@ -1,5 +1,5 @@
 import { useState, useContext, useMemo, useEffect } from "react";
-import { DataContext } from "../context";
+import { getPrefetchContext } from "../context";
 
 const defaultParams = {};
 const defaultInitialValue = {};
@@ -13,7 +13,9 @@ function usePrefetch(
     lazy = false,
   } = {}
 ) {
-  let { data: prefetchedData = {}, requests } = useContext(DataContext);
+  let { data: prefetchedData = {}, requests } = useContext(
+    getPrefetchContext()
+  );
 
   const initialState = useMemo(() => {
     return Object.keys(prefetchFunctions).reduce((total, currentKey) => {
