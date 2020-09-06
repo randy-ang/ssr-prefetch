@@ -1,5 +1,5 @@
 import React from "react";
-import { DataContext } from "../context";
+import { PrefetchProvider } from "../context";
 
 export default async function renderWithData(
   Component,
@@ -8,8 +8,8 @@ export default async function renderWithData(
 ) {
   const requests = [];
   const App = React.createElement(
-    DataContext.Provider,
-    { value: { ...context, requests } },
+    PrefetchProvider,
+    { ...context, requests },
     Component
   );
   const html = renderFunction(App);
