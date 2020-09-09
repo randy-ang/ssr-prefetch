@@ -1,5 +1,6 @@
 import { useState, useContext, useMemo, useEffect } from "react";
 import { getPrefetchContext } from "../context";
+import useDeepMemo from "../utils/useDeepMemo";
 
 const defaultParams = {};
 const defaultInitialValue = {};
@@ -13,13 +14,20 @@ function usePrefetch(
     lazy = false,
   } = {}
 ) {
-  let { data: prefetchedData = {}, requests } = useContext(
-    getPrefetchContext()
-  );
+  let { data: prefetchedData, requests } = useContext(getPrefetchContext());
+
+  const initialConfigs = useDeepMemo({
+    defaultValue,
+    initialValue,
+    lazy,
+  });
+
+  const paramsMemo = useDeepMemo(params);
 
   const initialState = useMemo(() => {
     return Object.keys(prefetchFunctions).reduce((total, currentKey) => {
-      const { [currentKey]: currentData = {} } = prefetchedData;
+      const { [currentKey]: currentData = {} } = prefetchedData || {};
+      const { initialValue, defaultValue, lazy } = initialConfigs;
       return {
         ...total,
         [currentKey]: {
@@ -29,7 +37,7 @@ function usePrefetch(
         },
       };
     }, {});
-  }, [prefetchFunctions]);
+  }, [prefetchFunctions, initialConfigs, prefetchedData]);
   const [data, setData] = useState(initialState);
 
   useEffect(() => {
@@ -66,7 +74,7 @@ function usePrefetch(
     Object.keys(initialState)
       .filter((key) => initialState[key].loading)
       .forEach(async (key) => {
-        const result = await prefetchFunctions[key](...(params[key] || []))
+        const result = await prefetchFunctions[key](...(paramsMemo[key] || []))
           .then((data) => ({ data }))
           .catch((error) => ({ error }));
         result.loading = false;
@@ -75,7 +83,7 @@ function usePrefetch(
           return { ...data, [key]: { ...currentValue, ...result } };
         });
       });
-  }, [initialState, prefetchFunctions]);
+  }, [initialState, prefetchFunctions, paramsMemo]);
 
   // for ssr prefetching
   if (requests) {
