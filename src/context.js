@@ -1,4 +1,5 @@
 import React, { createContext } from "react";
+import PropTypes from "prop-types";
 
 // This is to ensure hooks and server-side function uses the same context.
 // Otherwise, since we split hooks and server-side functions,
@@ -34,4 +35,14 @@ export const PrefetchProvider = ({ data, requests, children }) => {
       {children}
     </DataContext.Provider>
   );
+};
+
+PrefetchProvider.propTypes = {
+  data: PropTypes.any,
+  requests: PropTypes.arrayOf(
+    PropTypes.shape({
+      data: PropTypes.any,
+    })
+  ),
+  children: PropTypes.node,
 };
