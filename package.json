@@ -50,5 +50,8 @@
     "client.js",
     "server.js"
   ],
-  "main": "dist/index.js"
+  "main": "dist/index.js",
+  "dependencies": {
+    "@wry/equality": "^0.2.0"
+  }
 }
