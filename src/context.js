@@ -1,4 +1,4 @@
-import React, { createContext } from "react";
+import React, { createContext, useRef } from "react";
 import PropTypes from "prop-types";
 
 // This is to ensure hooks and server-side function uses the same context.
@@ -30,8 +30,9 @@ export function getPrefetchContext() {
 
 export const PrefetchProvider = ({ data, requests, children }) => {
   const DataContext = getPrefetchContext();
+  const memo = useRef();
   return (
-    <DataContext.Provider value={{ requests, data }}>
+    <DataContext.Provider value={{ requests, data, memo }}>
       {children}
     </DataContext.Provider>
   );
