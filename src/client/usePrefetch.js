@@ -1,12 +1,12 @@
 import { useState, useContext, useMemo, useEffect } from "react";
 import { getPrefetchContext } from "../context";
-import useDeepMemo from "../utils/useDeepMemo";
+import deepEqual from "@wry/equality";
 
 const defaultParams = {};
 const defaultInitialValue = {};
 
 function usePrefetch(
-  prefetchFunctions = {},
+  prefetchFunctions,
   {
     params = defaultParams,
     defaultValue,
@@ -14,20 +14,13 @@ function usePrefetch(
     lazy = false,
   } = {}
 ) {
-  let { data: prefetchedData, requests } = useContext(getPrefetchContext());
-
-  const initialConfigs = useDeepMemo({
-    defaultValue,
-    initialValue,
-    lazy,
-  });
-
-  const paramsMemo = useDeepMemo(params);
+  let { data: prefetchedData, requests, memo } = useContext(
+    getPrefetchContext()
+  );
 
   const initialState = useMemo(() => {
     return Object.keys(prefetchFunctions).reduce((total, currentKey) => {
       const { [currentKey]: currentData = {} } = prefetchedData || {};
-      const { initialValue, defaultValue, lazy } = initialConfigs;
       return {
         ...total,
         [currentKey]: {
@@ -37,7 +30,7 @@ function usePrefetch(
         },
       };
     }, {});
-  }, [prefetchFunctions, initialConfigs, prefetchedData]);
+  }, [prefetchFunctions, defaultValue, initialValue, lazy, prefetchedData]);
   const [data, setData] = useState(initialState);
 
   useEffect(() => {
@@ -59,8 +52,10 @@ function usePrefetch(
             .then((data) => ({ data }))
             .catch((error) => ({ error }));
           result.loading = false;
+          result.params = params;
           setData((data) => {
-            return { ...data, [key]: result };
+            const { [key]: currentValue = {} } = data;
+            return { ...data, [key]: { ...currentValue, ...result } };
           });
         };
         return newData;
@@ -68,22 +63,56 @@ function usePrefetch(
     });
   }, [prefetchFunctions]);
 
+  // refetching function client-side that failed during server-side
+  // called only once
   useEffect(() => {
-    // refetching function client-side that failed during server-side
-    // called only once
-    Object.keys(initialState)
-      .filter((key) => initialState[key].loading)
-      .forEach(async (key) => {
-        const result = await prefetchFunctions[key](...(paramsMemo[key] || []))
+    // if memo.current is true, means that this render is not from ssr
+    // but from other page, so it will not be called
+    if (!memo.current) {
+      for (const key in initialState) {
+        if (initialState[key].loading) {
+          prefetchFunctions[key](...(params[key] || []))
+            .then((data) => ({ data }))
+            .catch((error) => ({ error }))
+            .then((result) => {
+              result.loading = false;
+              result.params = params[key];
+              setData((data) => {
+                const { [key]: currentValue = {} } = data;
+                return { ...data, [key]: { ...currentValue, ...result } };
+              });
+            });
+        }
+      }
+    }
+  }, [prefetchFunctions, initialState, params, memo.current]);
+
+  useEffect(() => {
+    // if new params and functions compared to memoized one,
+    // probably means a new function/params, so fetch those first, then memoize them
+    if (
+      memo.current &&
+      !deepEqual(memo.current, { params, prefetchFunctions })
+    ) {
+      for (const key in prefetchFunctions) {
+        prefetchFunctions[key](...(params[key] || []))
           .then((data) => ({ data }))
-          .catch((error) => ({ error }));
-        result.loading = false;
-        setData((data) => {
-          const { [key]: currentValue = {} } = data;
-          return { ...data, [key]: { ...currentValue, ...result } };
-        });
-      });
-  }, [initialState, prefetchFunctions, paramsMemo]);
+          .catch((error) => ({ error }))
+          .then((result) => {
+            result.loading = false;
+            setData((data) => {
+              const { [key]: currentValue = {} } = data;
+              return { ...data, [key]: { ...currentValue, ...result } };
+            });
+          });
+      }
+
+      memo.current = {
+        params,
+        prefetchFunctions,
+      };
+    }
+  }, [memo.current, params, prefetchFunctions]);
 
   // for ssr prefetching
   if (requests) {
@@ -97,6 +126,12 @@ function usePrefetch(
         )
     );
   }
+
+  if (!memo.current)
+    memo.current = {
+      params,
+      prefetchFunctions,
+    };
 
   return data;
 }
