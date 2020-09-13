@@ -63,12 +63,13 @@ function usePrefetch(
     });
   }, [prefetchFunctions]);
 
+  const isFirstPrefetch = !memo.current;
   // refetching function client-side that failed during server-side
   // called only once
   useEffect(() => {
     // if memo.current is true, means that this render is not from ssr
     // but from other page, so it will not be called
-    if (!memo.current) {
+    if (isFirstPrefetch) {
       for (const key in initialState) {
         if (initialState[key].loading) {
           prefetchFunctions[key](...(params[key] || []))
@@ -84,8 +85,13 @@ function usePrefetch(
             });
         }
       }
+
+      memo.current = {
+        params,
+        prefetchFunctions,
+      };
     }
-  }, [prefetchFunctions, initialState, params, memo.current]);
+  }, [prefetchFunctions, initialState, params, isFirstPrefetch, memo]);
 
   useEffect(() => {
     // if new params and functions compared to memoized one,
@@ -126,12 +132,6 @@ function usePrefetch(
         )
     );
   }
-
-  if (!memo.current)
-    memo.current = {
-      params,
-      prefetchFunctions,
-    };
 
   return data;
 }
