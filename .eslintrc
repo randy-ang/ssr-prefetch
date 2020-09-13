@@ -3,18 +3,22 @@
   "extends": [
     "eslint:recommended",
     "plugin:react/recommended",
-    "plugin:react-hooks/recommended"
+    "plugin:react-hooks/recommended",
+    "plugin:jest/recommended"
   ],
+  "plugins": ["jest"],
   "env": {
     "es6": true,
     "browser": true,
+    "jest/globals": true,
     "node": true
   },
   "globals": {
     "DEV": true,
     "PROD": true,
     "STAG": true,
-    "process": true
+    "process": true,
+    "jest": false
   },
   "rules": {
     "react/no-unused-prop-types": "error",
