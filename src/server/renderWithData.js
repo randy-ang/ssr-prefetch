@@ -14,7 +14,11 @@ export default async function renderWithData(
   );
   const html = renderFunction(App);
   if (requests.length) {
-    return Promise.all(context.requests).then(() => {
+    const promises = [];
+    requests.forEach(({ func }) => {
+      promises.push(func());
+    });
+    return Promise.all(promises).then(() => {
       context.requests.push(...requests);
       return renderWithData(Component, context, renderFunction);
     });
