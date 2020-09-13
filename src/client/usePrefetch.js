@@ -125,11 +125,12 @@ function usePrefetch(
     requests.push(
       ...Object.keys(prefetchFunctions)
         .filter((key) => !lazy && !prefetchedData[key])
-        .map((key) =>
-          prefetchFunctions[key](...(params[key] || []))
-            .then((data) => (prefetchedData[key] = { data }))
-            .catch(() => (prefetchedData[key] = {}))
-        )
+        .map((key) => ({
+          func: () =>
+            prefetchFunctions[key](...(params[key] || []))
+              .then((data) => (prefetchedData[key] = { data }))
+              .catch(() => (prefetchedData[key] = {})),
+        }))
     );
   }
 
