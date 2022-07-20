@@ -47,27 +47,55 @@ describe("render with data behaviour", () => {
     const newsID = 5;
     const context = { data: {}, requests: [] };
     const App = <Cmp newsID={newsID} />;
-    return renderWithData(App, context).then((html) => {
+    return renderWithData(App, context).then(async (html) => {
       expect(context.requests.length).toStrictEqual(
         Object.keys(prefetchFunctions).length
       );
-      // ssr means that html should already contain the data
-      return prefetchFunctions.news(newsID).then(({ story }) => {
+
+      // successful prefetch means that html & context data should contain the data
+      await prefetchFunctions.user().then((userData) => {
+        expect(context.data.user.data).toEqual(userData);
+      });
+
+      return prefetchFunctions.news(newsID).then((newsResult) => {
+        const { story } = newsResult;
         expect(html).toContain(story);
+        expect(context.data.news.data).toEqual(newsResult);
       });
     });
   });
 
   test("prefetch with error", () => {
-    const context = { data: {}, requests: [] };
+    const context = {};
     const App = <Cmp />;
-    return renderWithData(App, context).then((html) => {
+    return renderWithData(App, context).then(async (html) => {
       expect(context.requests.length).toStrictEqual(
         Object.keys(prefetchFunctions).length
       );
       // error in ssr, means it will try to load once again client-side
-      return prefetchFunctions.news().catch(() => {
-        expect(html).toContain(loadingComponent);
+      await prefetchFunctions.news().catch(() => {});
+      expect(html).toContain(loadingComponent);
+    });
+  });
+
+  test("not passing data & requests via context should work as normal", () => {
+    const newsID = 5;
+    const context = {};
+    const App = <Cmp newsID={newsID} />;
+    return renderWithData(App, context).then(async (html) => {
+      expect(context.requests.length).toStrictEqual(
+        Object.keys(prefetchFunctions).length
+      );
+
+      // successful prefetch means that html & context data should contain the data
+      await prefetchFunctions.user().then((userData) => {
+        expect(context.data.user.data).toEqual(userData);
+      });
+
+      return prefetchFunctions.news(newsID).then((newsResult) => {
+        const { story } = newsResult;
+        expect(html).toContain(story);
+        expect(context.data.news.data).toEqual(newsResult);
       });
     });
   });
