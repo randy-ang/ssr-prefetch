@@ -1,6 +1,6 @@
 # react-ssr-prefetch
 
-This is a library to help prefetch data and then render the app alongside the data. The client side must be implemented. As for the server side, if it is not implemented, then it will just be a normal client side data fetching.
+This is a simple library to help prefetch data and then render the app alongside the data. The client side must be implemented. As for the server side, if it is not implemented, then it will just be a normal client side data fetching.
 
 ## Installing
 
@@ -36,6 +36,8 @@ This is a library to help prefetch data and then render the app alongside the da
 
 #### Example
 
+##### Client side
+
 ```
 import React from 'react'
 import { usePrefetch, PrefetchProvider } from 'react-ssr-prefetch/client'
@@ -51,7 +53,7 @@ const prefetchFunctions = {
     }),
 }
 
-const App = ({newsID) => {
+const App = ({ newsID }) => {
   const {
     news: { data, loading, error, refetch },
     user,
@@ -60,10 +62,41 @@ const App = ({newsID) => {
   if (loading) return 'Loading'
   if (error) return 'error'
 
-  return <div>data.story</div>
+  return <div>{JSON.stringify(data)}</div>
 }
 
+const ClientApp = () => {
+  // this will depend on where you pass the prefetch context data during the server side rendering
+  const { data } = window.__data
+  return (
+    <PrefetchProvider data={data}>
+        <App />
+    </PrefetchProvider>
+  )
+};
 
+```
+
+##### Server side
+
+```
+import React from 'react'
+import { renderWithData } from 'react-ssr-prefetch/server'
+import App from 'your_app_location'
+
+const app = <App />
+const prefetchContext = {}
+const htmlBody = await renderWithData(app, prefetchContext)
+const textHtml = `<!doctype html>
+<html>
+  <head></head><body>
+  <div id="main">${htmlBody}</div>
+  <script type="text/javascript">
+    window.__data=${JSON.stringify(prefetchContext.data)}
+  </script>
+</body>
+</html>`
+res.send(textHtml)
 ```
 
 ## Server Side Utils
@@ -103,7 +136,7 @@ res.send(textHtml)
 
 ### Prefetch Provider
 
-> Usage: `<PrefetchProvider data={window._data}><App/></PrefetchProvider>`
+> Usage: `<PrefetchProvider data={window.__data}><App/></PrefetchProvider>`
 
 | Params | Type   | Description                                                                                                  |
 | ------ | ------ | ------------------------------------------------------------------------------------------------------------ |
