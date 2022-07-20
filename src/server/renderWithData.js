@@ -3,9 +3,17 @@ import { PrefetchProvider } from "../context";
 
 export default async function renderWithData(
   Component,
-  context = { requests: [] },
+  context = { data: {}, requests: [] },
   renderFunction = require("react-dom/server").renderToString
 ) {
+  if (!context.data) {
+    context.data = {};
+  }
+
+  if (!context.requests) {
+    context.requests = [];
+  }
+  
   const requests = [];
   const App = React.createElement(
     PrefetchProvider,
