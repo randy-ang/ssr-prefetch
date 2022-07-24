@@ -1,4 +1,4 @@
-import { useState, useContext, useMemo, useEffect } from "react";
+import { useState, useContext, useMemo, useEffect, useRef } from "react";
 import { getPrefetchContext } from "../context";
 import deepEqual from "@wry/equality";
 
@@ -14,9 +14,10 @@ function usePrefetch(
     lazy = false,
   } = {}
 ) {
-  let { data: prefetchedData, requests, memo } = useContext(
+  let { data: prefetchedData, requests } = useContext(
     getPrefetchContext()
   );
+  const memo = useRef();
 
   const initialState = useMemo(() => {
     return Object.keys(prefetchFunctions).reduce((total, currentKey) => {
@@ -88,7 +89,6 @@ function usePrefetch(
 
       memo.current = {
         params,
-        prefetchFunctions,
       };
     }
   }, [prefetchFunctions, initialState, params, isFirstPrefetch, memo]);
@@ -98,7 +98,7 @@ function usePrefetch(
     // probably means a new function/params, so fetch those first, then memoize them
     if (
       memo.current &&
-      !deepEqual(memo.current, { params, prefetchFunctions })
+      !deepEqual(memo.current, { params })
     ) {
       for (const key in prefetchFunctions) {
         prefetchFunctions[key](...(params[key] || []))
@@ -115,10 +115,9 @@ function usePrefetch(
 
       memo.current = {
         params,
-        prefetchFunctions,
       };
     }
-  }, [memo.current, params, prefetchFunctions]);
+  }, [memo, params, prefetchFunctions]);
 
   // for ssr prefetching
   if (requests) {
