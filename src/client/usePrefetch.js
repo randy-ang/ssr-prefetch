@@ -38,7 +38,7 @@ function usePrefetch(
     // setting refetch function, called only at first call
     setData((data) => {
       return Object.keys(data).reduce((newData, key) => {
-        newData[key].refetch = async (...params) => {
+        newData[key].refetch = async () => {
           setData((data) => {
             const { [key]: currentValue = {} } = data;
             return {
@@ -49,11 +49,12 @@ function usePrefetch(
               },
             };
           });
-          const result = await prefetchFunctions[key](...(params[key] || []))
+          const usedParams = params[key] || [];
+          const result = await prefetchFunctions[key](...usedParams)
             .then((data) => ({ data }))
             .catch((error) => ({ error }));
           result.loading = false;
-          result.params = params;
+          result.params = usedParams;
           setData((data) => {
             const { [key]: currentValue = {} } = data;
             return { ...data, [key]: { ...currentValue, ...result } };
