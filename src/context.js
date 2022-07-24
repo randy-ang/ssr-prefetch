@@ -30,9 +30,8 @@ export function getPrefetchContext() {
 
 export const PrefetchProvider = ({ data, requests, children }) => {
   const DataContext = getPrefetchContext();
-  const memo = useRef();
   return (
-    <DataContext.Provider value={{ requests, data, memo }}>
+    <DataContext.Provider value={{ requests, data }}>
       {children}
     </DataContext.Provider>
   );
