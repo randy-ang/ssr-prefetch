@@ -1,6 +1,6 @@
 {
   "name": "react-ssr-prefetch",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "js library to prefetch server side before ssr",
   "repository": {
     "type": "git",
